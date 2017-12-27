@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Color exposing (Color, rgb, white)
 import Element exposing (circle, column, el, empty, image, link, newTab, row, text, viewport)
-import Element.Attributes exposing (center, class, fill, height, maxWidth, px, spacing, spread, vary, verticalCenter, width)
+import Element.Attributes exposing (center, class, maxWidth, px, spacing, spacingXY, vary, verticalCenter)
 import Element.Events exposing (onClick)
 import Html exposing (Html)
 import Style exposing (StyleSheet, cursor, importUrl, style, styleSheet, variation)
@@ -98,13 +98,13 @@ view { device, tab } =
 
         col =
             column None
-                [ spacing 10 ]
+                [ spacing 20 ]
                 [ el Name [ center ] <| text "O'NEILL COFFEE"
                 , newTab "https://goo.gl/maps/tXCDmxYtMiv" <|
                     el Address [ center ] <|
                         text "64 TOWNSHEND STREET SKIBBEREEN"
                 , row None
-                    [ spread ]
+                    [ spacing 30, center ]
                     [ newTab "https://www.facebook.com/ONeill-Coffee-710833155767900/" <|
                         circle 20 Social [ vary Fb True ] <|
                             el None [ class "fa fa-facebook", center, verticalCenter ] empty
@@ -118,73 +118,77 @@ view { device, tab } =
                 ]
 
         icons =
-            row None
-                [ center, spacing 20 ]
-                [ circle 30 Icon [ onClick <| SetTab Contact ] <|
-                    el None [ class "fa fa-info", center, verticalCenter ] empty
-                , circle 30 Icon [ onClick <| SetTab Hours ] <|
-                    el None [ class "fa fa-clock-o", center, verticalCenter ] empty
-                ]
+            el None [ center ] <|
+                row None
+                    [ spacing 20 ]
+                    [ circle 30 Icon [ onClick <| SetTab Contact ] <|
+                        el None [ class "fa fa-info", center, verticalCenter ] empty
+                    , circle 30 Icon [ onClick <| SetTab Hours ] <|
+                        el None [ class "fa fa-clock-o", center, verticalCenter ] empty
+                    ]
 
         content =
             case tab of
                 Contact ->
-                    column None
-                        [ center, spacing 20 ]
-                        [ row None
-                            [ verticalCenter, spacing 10 ]
-                            [ circle 20 Social [ vary Fb True ] <|
-                                el None [ class "fa fa-map-marker", center, verticalCenter ] empty
-                            , newTab "https://goo.gl/maps/tXCDmxYtMiv" <|
-                                el Address [ center ] <|
-                                    text "64 TOWNSHEND STREET SKIBBEREEN"
+                    el None [ center ] <|
+                        column None
+                            [ spacing 20 ]
+                            [ row None
+                                [ verticalCenter, spacing 10 ]
+                                [ circle 20 Social [ vary Fb True ] <|
+                                    el None [ class "fa fa-map-marker", center, verticalCenter ] empty
+                                , newTab "https://goo.gl/maps/tXCDmxYtMiv" <|
+                                    el Address [ center ] <|
+                                        text "64 TOWNSHEND STREET SKIBBEREEN"
+                                ]
+                            , row None
+                                [ verticalCenter, spacing 10 ]
+                                [ circle 20 Social [ vary Tw True ] <|
+                                    el None [ class "fa fa-phone", center, verticalCenter ] empty
+                                , link "tel:+353863334562" <|
+                                    el Address [ center ] <|
+                                        text "086 333 4562"
+                                ]
+                            , row None
+                                [ verticalCenter, spacing 10 ]
+                                [ circle 20 Social [ vary Insta True ] <|
+                                    el None [ class "fa fa-envelope", center, verticalCenter ] empty
+                                , link "mailto:oneillscoffee@gmail.com" <|
+                                    el Address [ center ] <|
+                                        text "oneillscoffee@gmail.com"
+                                ]
                             ]
-                        , row None
-                            [ verticalCenter, spacing 10 ]
-                            [ circle 20 Social [ vary Tw True ] <|
-                                el None [ class "fa fa-phone", center, verticalCenter ] empty
-                            , link "tel:+353863334562" <|
-                                el Address [ center ] <|
-                                    text "086 333 4562"
-                            ]
-                        , row None
-                            [ verticalCenter, spacing 10 ]
-                            [ circle 20 Social [ vary Insta True ] <|
-                                el None [ class "fa fa-envelope", center, verticalCenter ] empty
-                            , link "mailto:oneillscoffee@gmail.com" <|
-                                el Address [ center ] <|
-                                    text "oneillscoffee@gmail.com"
-                            ]
-                        ]
 
                 Hours ->
-                    column None
+                    el None
                         [ center ]
-                        [ el Day [] <| text "M 8:30 AM — 5:00 PM"
-                        , el Day [] <| text "T 8:30 AM — 5:00 PM"
-                        , el Day [] <| text "W 8:30 AM — 5:00 PM"
-                        , el Day [] <| text "T 8:30 AM — 5:00 PM"
-                        , el Day [] <| text "F 8:30 AM — 5:00 PM"
-                        , el Day [] <| text "S 9:00 AM — 5:00 PM"
-                        , el Day [] <| text "S Closed"
-                        ]
+                    <|
+                        column None
+                            [ center, spacing 20 ]
+                            [ el Day [] <| text "M 8:30 AM — 5:00 PM"
+                            , el Day [] <| text "T 8:30 AM — 5:00 PM"
+                            , el Day [] <| text "W 8:30 AM — 5:00 PM"
+                            , el Day [] <| text "T 8:30 AM — 5:00 PM"
+                            , el Day [] <| text "F 8:30 AM — 5:00 PM"
+                            , el Day [] <| text "S 9:00 AM — 5:00 PM"
+                            , el Day [] <| text "S Closed"
+                            ]
     in
     viewport styling <|
-        el None [ height fill, width fill, verticalCenter ] <|
-            column None
-                [ spacing 30 ]
-                [ row None
-                    [ verticalCenter, center ]
-                    [ image None
-                        [ center, verticalCenter, maxWidth <| px size ]
-                        { src = "/pic.jpg"
-                        , caption = "O'Neill Coffee"
-                        }
-                    , col
-                    ]
-                , icons
-                , content
+        column None
+            [ spacingXY 0 20 ]
+            [ row None
+                [ verticalCenter, center ]
+                [ image None
+                    [ maxWidth <| px size ]
+                    { src = "/pic.jpg"
+                    , caption = "O'Neill Coffee"
+                    }
+                , col
                 ]
+            , icons
+            , content
+            ]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
