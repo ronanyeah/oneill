@@ -162,7 +162,7 @@ view { device, tab } =
                                 [ verticalCenter, spacing 10 ]
                                 [ circle 20 Social [ vary Fb True ] <|
                                     el None [ class "fa fa-map-marker", center, verticalCenter ] empty
-                                , newTab "https://goo.gl/maps/tXCDmxYtMiv" <|
+                                , newTab "https://www.google.com/maps/search/?api=1&query=51.548634,-9.267783&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
                                     el Address [ center ] <|
                                         text "64 TOWNSHEND STREET SKIBBEREEN"
                                 ]
