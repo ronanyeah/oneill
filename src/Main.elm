@@ -55,7 +55,7 @@ view { device } =
         el Background [ height fill, width fill ] <|
             image None
                 [ center, verticalCenter, maxWidth <| px size ]
-                { src = "https://user-images.githubusercontent.com/9598261/34369822-19a1b73e-eab7-11e7-9048-222db6302506.png"
+                { src = "/pic.jpg"
                 , caption = "O'Neill Coffee"
                 }
 
