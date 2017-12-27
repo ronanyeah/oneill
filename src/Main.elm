@@ -1,11 +1,11 @@
 module Main exposing (main)
 
-import Color exposing (Color, rgb, white)
+import Color exposing (Color, black, rgb, white)
 import Element exposing (circle, column, el, empty, image, link, newTab, row, text, viewport)
 import Element.Attributes exposing (center, class, maxWidth, px, spacing, spacingXY, vary, verticalCenter)
 import Element.Events exposing (onClick)
 import Html exposing (Html)
-import Style exposing (StyleSheet, cursor, importUrl, style, styleSheet, variation)
+import Style exposing (Property, StyleSheet, cursor, importUrl, style, styleSheet, variation)
 import Style.Border as Border
 import Style.Color as Color exposing (background)
 import Style.Font as Font
@@ -42,6 +42,7 @@ type Variations
     = Fb
     | Tw
     | Insta
+    | Selected
 
 
 blue : Color
@@ -59,10 +60,27 @@ type Tab
     | Hours
 
 
+montserrat : Property class variation
+montserrat =
+    Font.typeface
+        [ Font.font "Montserrat"
+        , Font.sansSerif
+        ]
+
+
+osc : Property class variation
+osc =
+    Font.typeface
+        [ Font.font "Open Sans Condensed"
+        , Font.sansSerif
+        ]
+
+
 styling : StyleSheet Styles Variations
 styling =
     styleSheet
-        [ importUrl "/font-awesome/css/font-awesome.min.css"
+        [ importUrl "https://fonts.googleapis.com/css?family=Montserrat|Open+Sans+Condensed:300"
+        , importUrl "/font-awesome/css/font-awesome.min.css"
         , importUrl "/style.css"
         , style None []
         , style Name
@@ -71,19 +89,29 @@ styling =
             , Color.text white
             , Color.border white
             , Font.size 40
+            , montserrat
             ]
         , style Social
             [ background white
+            , Font.size 20
             , variation Fb [ background <| rgb 122 213 220 ]
             , variation Tw [ background <| rgb 255 204 83 ]
             , variation Insta [ background <| rgb 255 120 126 ]
             ]
         , style Address
-            [ Color.text white ]
+            [ osc, Color.text white, Font.size 25 ]
         , style Day
-            [ Color.text white ]
+            [ osc, Color.text white, Font.size 25 ]
         , style Icon
-            [ background white, cursor "pointer" ]
+            [ background blue
+            , cursor "pointer"
+            , Border.solid
+            , Border.all 1
+            , Color.border white
+            , Color.text white
+            , Font.size 30
+            , variation Selected [ background white, Color.text black ]
+            ]
         ]
 
 
@@ -100,9 +128,6 @@ view { device, tab } =
             column None
                 [ spacing 20 ]
                 [ el Name [ center ] <| text "O'NEILL COFFEE"
-                , newTab "https://goo.gl/maps/tXCDmxYtMiv" <|
-                    el Address [ center ] <|
-                        text "64 TOWNSHEND STREET SKIBBEREEN"
                 , row None
                     [ spacing 30, center ]
                     [ newTab "https://www.facebook.com/ONeill-Coffee-710833155767900/" <|
@@ -121,9 +146,9 @@ view { device, tab } =
             el None [ center ] <|
                 row None
                     [ spacing 20 ]
-                    [ circle 30 Icon [ onClick <| SetTab Contact ] <|
+                    [ circle 30 Icon [ onClick <| SetTab Contact, vary Selected <| tab == Contact ] <|
                         el None [ class "fa fa-info", center, verticalCenter ] empty
-                    , circle 30 Icon [ onClick <| SetTab Hours ] <|
+                    , circle 30 Icon [ onClick <| SetTab Hours, vary Selected <| tab == Hours ] <|
                         el None [ class "fa fa-clock-o", center, verticalCenter ] empty
                     ]
 
@@ -165,19 +190,25 @@ view { device, tab } =
                     <|
                         column None
                             [ center, spacing 20 ]
-                            [ el Day [] <| text "M 8:30 AM — 5:00 PM"
-                            , el Day [] <| text "T 8:30 AM — 5:00 PM"
-                            , el Day [] <| text "W 8:30 AM — 5:00 PM"
-                            , el Day [] <| text "T 8:30 AM — 5:00 PM"
-                            , el Day [] <| text "F 8:30 AM — 5:00 PM"
-                            , el Day [] <| text "S 9:00 AM — 5:00 PM"
+                            [ el Day [] <| text "M 8:30 AM - 5:00 PM"
+                            , el Day [] <| text "T 8:30 AM - 5:00 PM"
+                            , el Day [] <| text "W 8:30 AM - 5:00 PM"
+                            , el Day [] <| text "T 8:30 AM - 5:00 PM"
+                            , el Day [] <| text "F 8:30 AM - 5:00 PM"
+                            , el Day [] <| text "S 9:00 AM - 5:00 PM"
                             , el Day [] <| text "S Closed"
                             ]
+
+        layout =
+            if device.phone then
+                column
+            else
+                row
     in
     viewport styling <|
         column None
-            [ spacingXY 0 20 ]
-            [ row None
+            [ spacingXY 0 40 ]
+            [ layout None
                 [ verticalCenter, center ]
                 [ image None
                     [ maxWidth <| px size ]
