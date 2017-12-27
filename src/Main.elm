@@ -9,6 +9,7 @@ import Style exposing (Property, StyleSheet, cursor, importUrl, style, styleShee
 import Style.Border as Border
 import Style.Color as Color exposing (background)
 import Style.Font as Font
+import Style.Transition as Transition
 import Task
 import Window
 
@@ -43,6 +44,7 @@ type Variations
     | Tw
     | Insta
     | Selected
+    | Small
 
 
 blue : Color
@@ -90,6 +92,7 @@ styling =
             , Color.border white
             , Font.size 40
             , montserrat
+            , variation Small [ Font.size 20 ]
             ]
         , style Social
             [ background white
@@ -99,7 +102,11 @@ styling =
             , variation Insta [ background <| rgb 255 120 126 ]
             ]
         , style Address
-            [ osc, Color.text white, Font.size 25 ]
+            [ osc
+            , Color.text white
+            , Font.size 25
+            , variation Small [ Font.size 20 ]
+            ]
         , style Day
             [ osc, Color.text white, Font.size 25 ]
         , style Icon
@@ -111,6 +118,7 @@ styling =
             , Color.text white
             , Font.size 30
             , variation Selected [ background white, Color.text black ]
+            , Transition.all
             ]
         ]
 
@@ -118,6 +126,9 @@ styling =
 view : Model -> Html Msg
 view { device, tab } =
     let
+        thin =
+            device.width < 375
+
         size =
             if device.portrait then
                 toFloat device.width / 3
@@ -127,7 +138,7 @@ view { device, tab } =
         col =
             column None
                 [ spacing 20 ]
-                [ el Name [ center ] <| text "O'NEILL COFFEE"
+                [ el Name [ center, vary Small thin ] <| text "O'NEILL COFFEE"
                 , row None
                     [ spacing 30, center ]
                     [ newTab "https://www.facebook.com/ONeill-Coffee-710833155767900/" <|
@@ -152,35 +163,42 @@ view { device, tab } =
                         el None [ class "fa fa-clock-o", center, verticalCenter ] empty
                     ]
 
+        logoLayout =
+            if thin then
+                column
+            else
+                row
+
         content =
             case tab of
                 Contact ->
                     el None [ center ] <|
                         column None
                             [ spacing 20 ]
-                            [ row None
-                                [ verticalCenter, spacing 10 ]
+                            [ logoLayout None
+                                [ verticalCenter, spacing 10, center ]
                                 [ circle 20 Social [ vary Fb True ] <|
                                     el None [ class "fa fa-map-marker", center, verticalCenter ] empty
-                                , newTab "https://www.google.com/maps/search/?api=1&query=51.548634,-9.267783&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
-                                    el Address [ center ] <|
-                                        text "64 TOWNSHEND STREET SKIBBEREEN"
+                                , newTab "https://www.google.com/maps/search/?api=1&query=51.548638,-9.267786&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
+                                    el Address [ center, vary Small thin ] <|
+                                        text "64 TOWNSHEND STREET, SKIBBEREEN"
                                 ]
-                            , row None
-                                [ verticalCenter, spacing 10 ]
+                            , logoLayout None
+                                [ verticalCenter, spacing 10, center ]
                                 [ circle 20 Social [ vary Tw True ] <|
                                     el None [ class "fa fa-phone", center, verticalCenter ] empty
                                 , link "tel:+353863334562" <|
-                                    el Address [ center ] <|
+                                    el Address [ center, vary Small thin ] <|
                                         text "086 333 4562"
                                 ]
-                            , row None
-                                [ verticalCenter, spacing 10 ]
+                            , logoLayout None
+                                [ verticalCenter, spacing 10, center ]
                                 [ circle 20 Social [ vary Insta True ] <|
                                     el None [ class "fa fa-envelope", center, verticalCenter ] empty
                                 , link "mailto:oneillscoffee@gmail.com" <|
-                                    el Address [ center ] <|
-                                        text "oneillscoffee@gmail.com"
+                                    el None [ center ] <|
+                                        el Address [ center, vary Small thin ] <|
+                                            text "oneillscoffee@gmail.com"
                                 ]
                             ]
 
