@@ -19,34 +19,15 @@ import Window
 main : Program Never Model Msg
 main =
     Html.program
-        { init =
-            ( emptyModel
-                |> (\model ->
-                        { model
-                            | anim =
-                                Animation.interrupt
-                                    [ Animation.toWith
-                                        (Animation.easing
-                                            { duration = 2 * second
-                                            , ease = identity
-                                            }
-                                        )
-                                        [ Animation.opacity 1 ]
-                                    ]
-                                    model.anim
-                        }
-                   )
-            , Task.perform Resize Window.size
-            )
-        , subscriptions =
-            \{ anim } ->
-                Sub.batch
-                    [ Window.resizes Resize
-                    , Animation.subscription Animate [ anim ]
-                    ]
+        { init = init
+        , subscriptions = subscriptions
         , update = update
         , view = view
         }
+
+
+
+-- TYPES
 
 
 type alias Model =
@@ -54,6 +35,17 @@ type alias Model =
     , tab : Tab
     , anim : Animation.State
     }
+
+
+type Msg
+    = Resize Window.Size
+    | SetTab Tab
+    | Animate Animation.Msg
+
+
+type Tab
+    = Contact
+    | Hours
 
 
 type Styles
@@ -73,20 +65,49 @@ type Variations
     | Small
 
 
+
+-- INIT
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { device = Element.classifyDevice { width = 0, height = 0 }
+      , tab = Contact
+      , anim =
+            Animation.style [ Animation.opacity 0 ]
+                |> Animation.interrupt
+                    [ Animation.toWith
+                        (Animation.easing
+                            { duration = 2 * second
+                            , ease = identity
+                            }
+                        )
+                        [ Animation.opacity 1 ]
+                    ]
+      }
+    , Task.perform Resize Window.size
+    )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions { anim } =
+    Sub.batch
+        [ Window.resizes Resize
+        , Animation.subscription Animate [ anim ]
+        ]
+
+
+
+-- STYLING
+
+
 blue : Color
 blue =
     rgb 16 46 80
-
-
-type Msg
-    = Resize Window.Size
-    | SetTab Tab
-    | Animate Animation.Msg
-
-
-type Tab
-    = Contact
-    | Hours
 
 
 montserrat : Property class variation
@@ -148,6 +169,10 @@ styling =
             , Transition.all
             ]
         ]
+
+
+
+-- VIEW
 
 
 view : Model -> Html Msg
@@ -271,11 +296,17 @@ view { device, tab, anim } =
             ]
 
 
+
+-- UPDATE
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Resize size ->
-            ( { model | device = Element.classifyDevice size }, Cmd.none )
+            ( { model | device = Element.classifyDevice size }
+            , Cmd.none
+            )
 
         SetTab tab ->
             ( { model
@@ -290,11 +321,3 @@ update msg model =
               }
             , Cmd.none
             )
-
-
-emptyModel : Model
-emptyModel =
-    { device = Element.classifyDevice { width = 0, height = 0 }
-    , tab = Contact
-    , anim = Animation.style [ Animation.opacity 0 ]
-    }
