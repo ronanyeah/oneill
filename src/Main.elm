@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Animation
 import Color exposing (Color, black, rgb, white)
 import Element exposing (circle, column, el, empty, image, link, newTab, row, text, viewport)
 import Element.Attributes exposing (center, class, maxWidth, px, spacing, spacingXY, vary, verticalCenter)
@@ -11,14 +12,38 @@ import Style.Color as Color exposing (background)
 import Style.Font as Font
 import Style.Transition as Transition
 import Task
+import Time exposing (second)
 import Window
 
 
 main : Program Never Model Msg
 main =
     Html.program
-        { init = ( emptyModel, Task.perform Resize Window.size )
-        , subscriptions = \_ -> Window.resizes Resize
+        { init =
+            ( emptyModel
+                |> (\model ->
+                        { model
+                            | anim =
+                                Animation.interrupt
+                                    [ Animation.toWith
+                                        (Animation.easing
+                                            { duration = 2 * second
+                                            , ease = identity
+                                            }
+                                        )
+                                        [ Animation.opacity 1 ]
+                                    ]
+                                    model.anim
+                        }
+                   )
+            , Task.perform Resize Window.size
+            )
+        , subscriptions =
+            \{ anim } ->
+                Sub.batch
+                    [ Window.resizes Resize
+                    , Animation.subscription Animate [ anim ]
+                    ]
         , update = update
         , view = view
         }
@@ -27,6 +52,7 @@ main =
 type alias Model =
     { device : Element.Device
     , tab : Tab
+    , anim : Animation.State
     }
 
 
@@ -55,6 +81,7 @@ blue =
 type Msg
     = Resize Window.Size
     | SetTab Tab
+    | Animate Animation.Msg
 
 
 type Tab
@@ -124,7 +151,7 @@ styling =
 
 
 view : Model -> Html Msg
-view { device, tab } =
+view { device, tab, anim } =
     let
         thin =
             device.width < 375
@@ -222,10 +249,14 @@ view { device, tab } =
                 column
             else
                 row
+
+        fadeIn =
+            (++)
+                (Animation.render anim |> List.map Element.Attributes.toAttr)
     in
     viewport styling <|
         column None
-            [ spacingXY 0 40 ]
+            (fadeIn [ spacingXY 0 40 ])
             [ layout None
                 [ verticalCenter, center ]
                 [ image None
@@ -253,9 +284,17 @@ update msg model =
             , Cmd.none
             )
 
+        Animate animMsg ->
+            ( { model
+                | anim = Animation.update animMsg model.anim
+              }
+            , Cmd.none
+            )
+
 
 emptyModel : Model
 emptyModel =
     { device = Element.classifyDevice { width = 0, height = 0 }
     , tab = Contact
+    , anim = Animation.style [ Animation.opacity 0 ]
     }
