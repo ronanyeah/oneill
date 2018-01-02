@@ -131,7 +131,6 @@ styling =
     styleSheet
         [ importUrl "https://fonts.googleapis.com/css?family=Montserrat|Open+Sans+Condensed:300"
         , importUrl "/font-awesome/css/font-awesome.min.css"
-        , importUrl "/style.css"
         , style None []
         , style Name
             [ Border.top 2
