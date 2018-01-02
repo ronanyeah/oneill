@@ -3,8 +3,7 @@ module Main exposing (main)
 import Animation
 import Color exposing (Color, black, rgb, white)
 import Element exposing (circle, column, el, empty, image, link, newTab, row, text, viewport)
-import Element.Attributes exposing (center, class, maxWidth, px, spacing, spacingXY, vary, verticalCenter)
-import Element.Events exposing (onClick)
+import Element.Attributes exposing (alignLeft, center, class, maxWidth, px, spacing, vary, verticalCenter)
 import Html exposing (Html)
 import Style exposing (Property, StyleSheet, cursor, importUrl, style, styleSheet, variation)
 import Style.Border as Border
@@ -32,20 +31,13 @@ main =
 
 type alias Model =
     { device : Element.Device
-    , tab : Tab
     , anim : Animation.State
     }
 
 
 type Msg
     = Resize Window.Size
-    | SetTab Tab
     | Animate Animation.Msg
-
-
-type Tab
-    = Contact
-    | Hours
 
 
 type Styles
@@ -55,6 +47,7 @@ type Styles
     | Social
     | Address
     | Day
+    | Line
 
 
 type Variations
@@ -72,7 +65,6 @@ type Variations
 init : ( Model, Cmd Msg )
 init =
     ( { device = Element.classifyDevice { width = 0, height = 0 }
-      , tab = Contact
       , anim =
             Animation.style [ Animation.opacity 0 ]
                 |> Animation.interrupt
@@ -152,8 +144,9 @@ styling =
             [ osc
             , Color.text white
             , Font.size 25
-            , variation Small [ Font.size 20 ]
+            , variation Small [ Font.size 18 ]
             ]
+        , style Line [ background white ]
         , style Day
             [ osc, Color.text white, Font.size 25 ]
         , style Icon
@@ -175,10 +168,10 @@ styling =
 
 
 view : Model -> Html Msg
-view { device, tab, anim } =
+view { device, anim } =
     let
         thin =
-            device.width < 375
+            device.width < 425
 
         size =
             if device.portrait then
@@ -193,26 +186,16 @@ view { device, tab, anim } =
                 , row None
                     [ spacing 30, center ]
                     [ newTab "https://www.facebook.com/ONeill-Coffee-710833155767900/" <|
-                        circle 20 Social [ vary Fb True ] <|
+                        circle 25 Social [ vary Fb True ] <|
                             el None [ class "fa fa-facebook", center, verticalCenter ] empty
                     , newTab "https://twitter.com/oneillcoffee" <|
-                        circle 20 Social [ vary Tw True ] <|
+                        circle 25 Social [ vary Tw True ] <|
                             el None [ class "fa fa-twitter", center, verticalCenter ] empty
                     , newTab "https://www.instagram.com/oneillcoffee/" <|
-                        circle 20 Social [ vary Insta True ] <|
+                        circle 25 Social [ vary Insta True ] <|
                             el None [ class "fa fa-instagram", center, verticalCenter ] empty
                     ]
                 ]
-
-        icons =
-            el None [ center ] <|
-                row None
-                    [ spacing 20 ]
-                    [ circle 30 Icon [ onClick <| SetTab Contact, vary Selected <| tab == Contact ] <|
-                        el None [ class "fa fa-info", center, verticalCenter ] empty
-                    , circle 30 Icon [ onClick <| SetTab Hours, vary Selected <| tab == Hours ] <|
-                        el None [ class "fa fa-clock-o", center, verticalCenter ] empty
-                    ]
 
         logoLayout =
             if thin then
@@ -220,53 +203,52 @@ view { device, tab, anim } =
             else
                 row
 
-        content =
-            case tab of
-                Contact ->
-                    el None [ center ] <|
-                        column None
-                            [ spacing 20 ]
-                            [ logoLayout None
-                                [ verticalCenter, spacing 10, center ]
-                                [ circle 20 Social [ vary Fb True ] <|
-                                    el None [ class "fa fa-map-marker", center, verticalCenter ] empty
-                                , newTab "https://www.google.com/maps/search/?api=1&query=51.548638,-9.267786&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
-                                    el Address [ center, vary Small thin ] <|
-                                        text "64 TOWNSHEND STREET, SKIBBEREEN"
-                                ]
-                            , logoLayout None
-                                [ verticalCenter, spacing 10, center ]
-                                [ circle 20 Social [ vary Tw True ] <|
-                                    el None [ class "fa fa-phone", center, verticalCenter ] empty
-                                , link "tel:+353863334562" <|
-                                    el Address [ center, vary Small thin ] <|
-                                        text "086 333 4562"
-                                ]
-                            , logoLayout None
-                                [ verticalCenter, spacing 10, center ]
-                                [ circle 20 Social [ vary Insta True ] <|
-                                    el None [ class "fa fa-envelope", center, verticalCenter ] empty
-                                , link "mailto:oneillscoffee@gmail.com" <|
-                                    el None [ center ] <|
-                                        el Address [ center, vary Small thin ] <|
-                                            text "oneillscoffee@gmail.com"
-                                ]
-                            ]
+        info =
+            column None
+                [ spacing 20
+                , if thin then
+                    center
+                  else
+                    alignLeft
+                ]
+                [ logoLayout None
+                    [ verticalCenter, spacing 10, center ]
+                    [ circle 20 Social [ vary Fb True ] <|
+                        el None [ class "fa fa-map-marker", center, verticalCenter ] empty
+                    , newTab "https://www.google.com/maps/search/?api=1&query=51.548638,-9.267786&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
+                        el Address [ center, vary Small thin ] <|
+                            text "64 TOWNSHEND STREET, SKIBBEREEN"
+                    ]
+                , logoLayout None
+                    [ verticalCenter, spacing 10, center ]
+                    [ circle 20 Social [ vary Tw True ] <|
+                        el None [ class "fa fa-phone", center, verticalCenter ] empty
+                    , link "tel:+353863334562" <|
+                        el Address [ center, vary Small thin ] <|
+                            text "086 333 4562"
+                    ]
+                , logoLayout None
+                    [ verticalCenter, spacing 10, center ]
+                    [ circle 20 Social [ vary Insta True ] <|
+                        el None [ class "fa fa-envelope", center, verticalCenter ] empty
+                    , link "mailto:oneillscoffee@gmail.com" <|
+                        el None [ center ] <|
+                            el Address [ center, vary Small thin ] <|
+                                text "oneillscoffee@gmail.com"
+                    ]
+                ]
 
-                Hours ->
-                    el None
-                        [ center ]
-                    <|
-                        column None
-                            [ center, spacing 20 ]
-                            [ el Day [] <| text "M 8:30 AM - 5:00 PM"
-                            , el Day [] <| text "T 8:30 AM - 5:00 PM"
-                            , el Day [] <| text "W 8:30 AM - 5:00 PM"
-                            , el Day [] <| text "T 8:30 AM - 5:00 PM"
-                            , el Day [] <| text "F 8:30 AM - 5:00 PM"
-                            , el Day [] <| text "S 9:00 AM - 5:00 PM"
-                            , el Day [] <| text "S Closed"
-                            ]
+        hours =
+            column None
+                [ center, spacing 20 ]
+                [ el Day [] <| text "M 8:30 AM - 5:00 PM"
+                , el Day [] <| text "T 8:30 AM - 5:00 PM"
+                , el Day [] <| text "W 8:30 AM - 5:00 PM"
+                , el Day [] <| text "T 8:30 AM - 5:00 PM"
+                , el Day [] <| text "F 8:30 AM - 5:00 PM"
+                , el Day [] <| text "S 9:00 AM - 5:00 PM"
+                , el Day [] <| text "S Closed"
+                ]
 
         layout =
             if device.phone then
@@ -279,20 +261,21 @@ view { device, tab, anim } =
                 (Animation.render anim |> List.map Element.Attributes.toAttr)
     in
     viewport styling <|
-        column None
-            (fadeIn [ spacingXY 0 40 ])
-            [ layout None
-                [ verticalCenter, center ]
-                [ image None
-                    [ maxWidth <| px size ]
-                    { src = "/pic.jpg"
-                    , caption = "O'Neill Coffee"
-                    }
-                , col
+        el None [ center ] <|
+            column None
+                (fadeIn [ spacing 50, center ])
+                [ layout None
+                    [ verticalCenter, center ]
+                    [ image None
+                        [ maxWidth <| px size ]
+                        { src = "/pic.jpg"
+                        , caption = "O'Neill Coffee"
+                        }
+                    , col
+                    ]
+                , info
+                , hours
                 ]
-            , icons
-            , content
-            ]
 
 
 
@@ -304,13 +287,6 @@ update msg model =
     case msg of
         Resize size ->
             ( { model | device = Element.classifyDevice size }
-            , Cmd.none
-            )
-
-        SetTab tab ->
-            ( { model
-                | tab = tab
-              }
             , Cmd.none
             )
 
