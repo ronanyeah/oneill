@@ -37,12 +37,6 @@ module.exports = {
   plugins: [
     new webpack.NamedModulesPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
-    new copyWebpackPlugin([
-      "static",
-      {
-        from: "node_modules/font-awesome",
-        to: "font-awesome"
-      }
-    ])
+    new copyWebpackPlugin(["static"])
   ]
 };

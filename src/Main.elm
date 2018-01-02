@@ -122,7 +122,6 @@ styling : StyleSheet Styles Variations
 styling =
     styleSheet
         [ importUrl "https://fonts.googleapis.com/css?family=Montserrat|Open+Sans+Condensed:300"
-        , importUrl "/font-awesome/css/font-awesome.min.css"
         , style None []
         , style Name
             [ Border.top 2
@@ -187,13 +186,13 @@ view { device, anim } =
                     [ spacing 30, center ]
                     [ newTab "https://www.facebook.com/ONeill-Coffee-710833155767900/" <|
                         circle 25 Social [ vary Fb True ] <|
-                            el None [ class "fa fa-facebook", center, verticalCenter ] empty
+                            el None [ class "fab fa-facebook-f", center, verticalCenter ] empty
                     , newTab "https://twitter.com/oneillcoffee" <|
                         circle 25 Social [ vary Tw True ] <|
-                            el None [ class "fa fa-twitter", center, verticalCenter ] empty
+                            el None [ class "fab fa-twitter", center, verticalCenter ] empty
                     , newTab "https://www.instagram.com/oneillcoffee/" <|
                         circle 25 Social [ vary Insta True ] <|
-                            el None [ class "fa fa-instagram", center, verticalCenter ] empty
+                            el None [ class "fab fa-instagram", center, verticalCenter ] empty
                     ]
                 ]
 
@@ -214,7 +213,7 @@ view { device, anim } =
                 [ logoLayout None
                     [ verticalCenter, spacing 10, center ]
                     [ circle 20 Social [ vary Fb True ] <|
-                        el None [ class "fa fa-map-marker", center, verticalCenter ] empty
+                        el None [ class "fas fa-map-marker-alt", center, verticalCenter ] empty
                     , newTab "https://www.google.com/maps/search/?api=1&query=51.548638,-9.267786&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
                         el Address [ center, vary Small thin ] <|
                             text "64 TOWNSHEND STREET, SKIBBEREEN"
@@ -222,7 +221,7 @@ view { device, anim } =
                 , logoLayout None
                     [ verticalCenter, spacing 10, center ]
                     [ circle 20 Social [ vary Tw True ] <|
-                        el None [ class "fa fa-phone", center, verticalCenter ] empty
+                        el None [ class "fas fa-phone", center, verticalCenter ] empty
                     , link "tel:+353863334562" <|
                         el Address [ center, vary Small thin ] <|
                             text "086 333 4562"
@@ -230,7 +229,7 @@ view { device, anim } =
                 , logoLayout None
                     [ verticalCenter, spacing 10, center ]
                     [ circle 20 Social [ vary Insta True ] <|
-                        el None [ class "fa fa-envelope", center, verticalCenter ] empty
+                        el None [ class "fas fa-envelope", center, verticalCenter ] empty
                     , link "mailto:oneillscoffee@gmail.com" <|
                         el None [ center ] <|
                             el Address [ center, vary Small thin ] <|
