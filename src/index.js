@@ -10,4 +10,21 @@ fa.library.add(require("@fortawesome/fontawesome-free-solid/faEnvelope"));
 
 var Elm = require("./Main.elm");
 
-var app = Elm.Main.embed(document.getElementById("app"));
+var app = Elm.Main.embed(document.body);
+
+window.initMap = function() {
+  var map = new google.maps.Map(document.createElement("div"));
+
+  var service = new google.maps.places.PlacesService(map);
+
+  service.getDetails(
+    {
+      placeId: "ChIJjzfi5b-lRUgRMa-Dov_hHrA"
+    },
+    function(place, status) {
+      if (status === "OK") {
+        app.ports.hours.send(place);
+      }
+    }
+  );
+};

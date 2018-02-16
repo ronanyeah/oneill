@@ -1,4 +1,4 @@
-const copyWebpackPlugin = require("copy-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 const { resolve } = require("path");
 const webpack = require("webpack");
 
@@ -37,6 +37,6 @@ module.exports = {
   plugins: [
     new webpack.NamedModulesPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
-    new copyWebpackPlugin(["static"])
+    new CopyWebpackPlugin(["static"])
   ]
 };

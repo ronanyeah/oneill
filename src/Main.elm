@@ -1,18 +1,15 @@
-module Main exposing (main)
+port module Main exposing (main)
 
-import Animation
-import Color exposing (Color, black, rgb, white)
-import Element exposing (circle, column, el, empty, image, link, newTab, row, text, viewport)
-import Element.Attributes exposing (alignLeft, center, class, maxWidth, px, spacing, vary, verticalCenter)
+import Color exposing (Color, rgb)
+import Element exposing (Attribute, Element, alignLeft, attribute, center, centerY, column, el, empty, height, html, image, layout, link, newTabLink, padding, px, row, spacing, text, width)
+import Element.Background as Background
+import Element.Border as Border
+import Element.Font as Font
 import Html exposing (Html)
-import Style exposing (Property, StyleSheet, cursor, importUrl, style, styleSheet, variation)
-import Style.Border as Border
-import Style.Color as Color exposing (background)
-import Style.Font as Font
-import Style.Transition as Transition
+import Html.Attributes as Attr
+import Json.Decode as Decode exposing (Decoder, Value)
 import Task
-import Time exposing (second)
-import Window
+import Window exposing (Size)
 
 
 main : Program Never Model Msg
@@ -25,37 +22,34 @@ main =
         }
 
 
+port hours : (Value -> msg) -> Sub msg
+
+
 
 -- TYPES
 
 
+type Device
+    = Mobile
+    | Desktop
+
+
 type alias Model =
-    { device : Element.Device
-    , anim : Animation.State
+    { device : Device
+    , size : Size
+    , details : Maybe Details
     }
 
 
 type Msg
-    = Resize Window.Size
-    | Animate Animation.Msg
+    = Resize Size
+    | Hours Value
 
 
-type Styles
-    = None
-    | Name
-    | Icon
-    | Social
-    | Address
-    | Day
-    | Line
-
-
-type Variations
-    = Fb
-    | Tw
-    | Insta
-    | Selected
-    | Small
+type alias Details =
+    { location : String
+    , hours : List String
+    }
 
 
 
@@ -64,18 +58,9 @@ type Variations
 
 init : ( Model, Cmd Msg )
 init =
-    ( { device = Element.classifyDevice { width = 0, height = 0 }
-      , anim =
-            Animation.style [ Animation.opacity 0 ]
-                |> Animation.interrupt
-                    [ Animation.toWith
-                        (Animation.easing
-                            { duration = 2 * second
-                            , ease = identity
-                            }
-                        )
-                        [ Animation.opacity 1 ]
-                    ]
+    ( { device = Desktop
+      , size = { width = 0, height = 0 }
+      , details = Nothing
       }
     , Task.perform Resize Window.size
     )
@@ -86,10 +71,10 @@ init =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions { anim } =
+subscriptions _ =
     Sub.batch
         [ Window.resizes Resize
-        , Animation.subscription Animate [ anim ]
+        , hours Hours
         ]
 
 
@@ -102,63 +87,23 @@ blue =
     rgb 16 46 80
 
 
-montserrat : Property class variation
+montserrat : Attribute msg
 montserrat =
-    Font.typeface
-        [ Font.font "Montserrat"
-        , Font.sansSerif
+    Font.family
+        [ Font.external
+            { url = "https://fonts.googleapis.com/css?family=Montserrat"
+            , name = "Montserrat"
+            }
         ]
 
 
-osc : Property class variation
+osc : Attribute msg
 osc =
-    Font.typeface
-        [ Font.font "Open Sans Condensed"
-        , Font.sansSerif
-        ]
-
-
-styling : StyleSheet Styles Variations
-styling =
-    styleSheet
-        [ importUrl "https://fonts.googleapis.com/css?family=Montserrat|Open+Sans+Condensed:300"
-        , style None []
-        , style Name
-            [ Border.top 2
-            , Border.bottom 2
-            , Color.text white
-            , Color.border white
-            , Font.size 40
-            , montserrat
-            , variation Small [ Font.size 20 ]
-            ]
-        , style Social
-            [ background white
-            , Font.size 20
-            , variation Fb [ background <| rgb 122 213 220 ]
-            , variation Tw [ background <| rgb 255 204 83 ]
-            , variation Insta [ background <| rgb 255 120 126 ]
-            ]
-        , style Address
-            [ osc
-            , Color.text white
-            , Font.size 25
-            , variation Small [ Font.size 18 ]
-            ]
-        , style Line [ background white ]
-        , style Day
-            [ osc, Color.text white, Font.size 25 ]
-        , style Icon
-            [ background blue
-            , cursor "pointer"
-            , Border.solid
-            , Border.all 1
-            , Color.border white
-            , Color.text white
-            , Font.size 30
-            , variation Selected [ background white, Color.text black ]
-            , Transition.all
-            ]
+    Font.family
+        [ Font.external
+            { url = "https://fonts.googleapis.com/css?family=Open+Sans+Condensed:300"
+            , name = "Open Sans Condensed"
+            }
         ]
 
 
@@ -167,33 +112,63 @@ styling =
 
 
 view : Model -> Html Msg
-view { device, anim } =
+view { device, size, details } =
     let
         thin =
-            device.width < 425
+            size.width < 425
 
-        size =
-            if device.portrait then
-                toFloat device.width / 3
+        wall =
+            if size.height > size.width then
+                toFloat size.width / 3
             else
-                toFloat device.height / 3
+                toFloat size.height / 3
 
-        col =
-            column None
-                [ spacing 20 ]
-                [ el Name [ center, vary Small thin ] <| text "O'NEILL COFFEE"
-                , row None
-                    [ spacing 30, center ]
-                    [ newTab "https://www.facebook.com/ONeill-Coffee-710833155767900/" <|
-                        circle 25 Social [ vary Fb True ] <|
-                            el None [ class "fab fa-facebook-f", center, verticalCenter ] empty
-                    , newTab "https://twitter.com/oneillcoffee" <|
-                        circle 25 Social [ vary Tw True ] <|
-                            el None [ class "fab fa-twitter", center, verticalCenter ] empty
-                    , newTab "https://www.instagram.com/oneillcoffee/" <|
-                        circle 25 Social [ vary Insta True ] <|
-                            el None [ class "fab fa-instagram", center, verticalCenter ] empty
-                    ]
+        iconStyle =
+            [ Font.size 15
+            , center
+            , centerY
+            ]
+
+        addressStyle =
+            [ osc
+            , Font.color Color.white
+            , Font.size 25
+            , center
+            ]
+
+        header =
+            el
+                [ Border.widthXY 0 2
+                , Font.color Color.white
+                , Border.color Color.white
+                , Font.size 40
+                , center
+                , montserrat
+                ]
+            <|
+                text "O'NEILL COFFEE"
+
+        socialLinks =
+            row
+                [ spacing 30, center ]
+                [ newTabLink []
+                    { url = "https://www.facebook.com/ONeill-Coffee-710833155767900/"
+                    , label =
+                        circle 50 [ Background.color <| rgb 122 213 220 ] <|
+                            fa iconStyle "fab fa-facebook-f"
+                    }
+                , newTabLink []
+                    { url = "https://twitter.com/oneillcoffee"
+                    , label =
+                        circle 50 [ Background.color <| rgb 255 204 83 ] <|
+                            fa iconStyle "fab fa-twitter"
+                    }
+                , newTabLink []
+                    { url = "https://www.instagram.com/oneillcoffee/"
+                    , label =
+                        circle 50 [ Background.color <| rgb 255 120 126 ] <|
+                            fa iconStyle "fab fa-instagram"
+                    }
                 ]
 
         logoLayout =
@@ -203,75 +178,106 @@ view { device, anim } =
                 row
 
         info =
-            column None
+            column
                 [ spacing 20
                 , if thin then
                     center
                   else
                     alignLeft
                 ]
-                [ logoLayout None
-                    [ verticalCenter, spacing 10, center ]
-                    [ circle 20 Social [ vary Fb True ] <|
-                        el None [ class "fas fa-map-marker-alt", center, verticalCenter ] empty
-                    , newTab "https://www.google.com/maps/search/?api=1&query=51.548638,-9.267786&query_place_id=ChIJjzfi5b-lRUgRMa-Dov_hHrA" <|
-                        el Address [ center, vary Small thin ] <|
-                            text "64 TOWNSHEND STREET, SKIBBEREEN"
+                [ logoLayout
+                    [ centerY, spacing 10, center ]
+                    [ circle 30 [ Background.color <| rgb 122 213 220 ] <|
+                        fa iconStyle "fas fa-map-marker-alt"
+                    , let
+                        addr =
+                            el addressStyle <|
+                                text "64 TOWNSHEND STREET, SKIBBEREEN"
+                      in
+                      case details of
+                        Just { location } ->
+                            newTabLink []
+                                { url = location
+                                , label = addr
+                                }
+
+                        Nothing ->
+                            addr
                     ]
-                , logoLayout None
-                    [ verticalCenter, spacing 10, center ]
-                    [ circle 20 Social [ vary Tw True ] <|
-                        el None [ class "fas fa-phone", center, verticalCenter ] empty
-                    , link "tel:+353863334562" <|
-                        el Address [ center, vary Small thin ] <|
-                            text "086 333 4562"
+                , logoLayout
+                    [ centerY, spacing 10, center ]
+                    [ circle 30 [ Background.color <| rgb 255 204 83 ] <|
+                        fa iconStyle "fas fa-phone"
+                    , link []
+                        { url = "tel:+353863334562"
+                        , label =
+                            el addressStyle <|
+                                text "086 333 4562"
+                        }
                     ]
-                , logoLayout None
-                    [ verticalCenter, spacing 10, center ]
-                    [ circle 20 Social [ vary Insta True ] <|
-                        el None [ class "fas fa-envelope", center, verticalCenter ] empty
-                    , link "mailto:oneillscoffee@gmail.com" <|
-                        el None [ center ] <|
-                            el Address [ center, vary Small thin ] <|
-                                text "oneillscoffee@gmail.com"
+                , logoLayout
+                    [ centerY, spacing 10, center ]
+                    [ circle 30 [ Background.color <| rgb 255 120 126 ] <|
+                        fa iconStyle "fas fa-envelope"
+                    , link []
+                        { url = "mailto:oneillscoffee@gmail.com"
+                        , label =
+                            el [ center ] <|
+                                el addressStyle <|
+                                    text "oneillscoffee@gmail.com"
+                        }
                     ]
                 ]
 
         hours =
-            column None
-                [ center, spacing 20 ]
-                [ el Day [] <| text "M 8:30 AM - 5:00 PM"
-                , el Day [] <| text "T 8:30 AM - 5:00 PM"
-                , el Day [] <| text "W 8:30 AM - 5:00 PM"
-                , el Day [] <| text "T 8:30 AM - 5:00 PM"
-                , el Day [] <| text "F 8:30 AM - 5:00 PM"
-                , el Day [] <| text "S 9:00 AM - 5:00 PM"
-                , el Day [] <| text "S Closed"
-                ]
+            details
+                |> Maybe.map
+                    (.hours
+                        >> List.map
+                            (text
+                                >> el
+                                    [ osc
+                                    , Font.color Color.white
+                                    , Font.size 25
+                                    ]
+                            )
+                        >> column
+                            [ center
+                            , spacing 20
+                            , inlineStyle [ uppercase ]
+                            ]
+                    )
+                |> Maybe.withDefault empty
 
-        layout =
-            if device.phone then
-                column
-            else
-                row
+        top =
+            (case device of
+                Mobile ->
+                    column
 
-        fadeIn =
-            (++)
-                (Animation.render anim |> List.map Element.Attributes.toAttr)
-    in
-    viewport styling <|
-        el None [ center ] <|
-            column None
-                (fadeIn [ spacing 50, center ])
-                [ layout None
-                    [ verticalCenter, center ]
-                    [ image None
-                        [ maxWidth <| px size ]
-                        { src = "/pic.jpg"
-                        , caption = "O'Neill Coffee"
-                        }
-                    , col
+                Desktop ->
+                    row
+            )
+                [ centerY, center ]
+                [ image
+                    [ width <| px <| round wall
+                    , center
                     ]
+                    { src = "/pic.jpg"
+                    , description = "O'Neill Coffee"
+                    }
+                , el [ centerY ] <|
+                    column
+                        [ spacing 20 ]
+                        [ header
+                        , socialLinks
+                        ]
+                ]
+    in
+    layout [ Background.color blue, padding 20 ] <|
+        el [ center ] <|
+            column
+                [ spacing 50, center ]
+                [ top
                 , info
                 , hours
                 ]
@@ -285,13 +291,73 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Resize size ->
-            ( { model | device = Element.classifyDevice size }
-            , Cmd.none
-            )
-
-        Animate animMsg ->
             ( { model
-                | anim = Animation.update animMsg model.anim
+                | device =
+                    if size.width < 600 then
+                        Mobile
+                    else
+                        Desktop
+                , size = size
               }
             , Cmd.none
             )
+
+        Hours val ->
+            ( val
+                |> Decode.decodeValue decodeDetails
+                |> Result.toMaybe
+                |> (\result ->
+                        { model | details = result }
+                   )
+            , Cmd.none
+            )
+
+
+
+-- SUPPORT
+
+
+circle : Int -> List (Attribute msg) -> Element msg -> Element msg
+circle diameter attrs =
+    el
+        ([ width <| px diameter
+         , height <| px diameter
+         , Border.rounded <| diameter // 2
+         , Background.color Color.green
+         ]
+            ++ attrs
+        )
+
+
+fa : List (Attribute msg) -> String -> Element msg
+fa attrs =
+    Attr.class
+        >> List.singleton
+        >> flip Html.span []
+        >> html
+        >> el attrs
+
+
+inlineStyle : List ( String, String ) -> Attribute msg
+inlineStyle =
+    Attr.style
+        >> attribute
+
+
+maxWidth : Int -> ( String, String )
+maxWidth =
+    toString
+        >> flip (++) "px"
+        >> (,) "maxWidth"
+
+
+uppercase : ( String, String )
+uppercase =
+    ( "text-transform", "uppercase" )
+
+
+decodeDetails : Decoder Details
+decodeDetails =
+    Decode.map2 Details
+        (Decode.field "url" Decode.string)
+        (Decode.at [ "opening_hours", "weekday_text" ] (Decode.list Decode.string))
