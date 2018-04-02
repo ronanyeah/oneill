@@ -1,7 +1,7 @@
 port module Main exposing (main)
 
 import Color exposing (Color, rgb)
-import Element exposing (Attribute, Element, alignLeft, attribute, center, centerY, column, el, empty, height, html, image, layout, link, newTabLink, padding, px, row, spacing, text, width)
+import Element exposing (Attribute, Element, centerX, centerY, column, el, empty, height, html, image, layout, link, newTabLink, padding, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -125,7 +125,7 @@ view { device, size, details } =
 
         iconStyle =
             [ Font.size 15
-            , center
+            , centerX
             , centerY
             ]
 
@@ -133,7 +133,7 @@ view { device, size, details } =
             [ osc
             , Font.color Color.white
             , Font.size 25
-            , center
+            , centerX
             ]
 
         header =
@@ -142,34 +142,35 @@ view { device, size, details } =
                 , Font.color Color.white
                 , Border.color Color.white
                 , Font.size 40
-                , center
+                , centerX
                 , montserrat
                 ]
             <|
                 text "O'NEILL COFFEE"
 
         socialLinks =
-            row
-                [ spacing 30, center ]
-                [ newTabLink []
-                    { url = "https://www.facebook.com/ONeill-Coffee-710833155767900/"
-                    , label =
-                        circle 50 [ Background.color <| rgb 122 213 220 ] <|
-                            fa iconStyle "fab fa-facebook-f"
-                    }
-                , newTabLink []
-                    { url = "https://twitter.com/oneillcoffee"
-                    , label =
-                        circle 50 [ Background.color <| rgb 255 204 83 ] <|
-                            fa iconStyle "fab fa-twitter"
-                    }
-                , newTabLink []
-                    { url = "https://www.instagram.com/oneillcoffee/"
-                    , label =
-                        circle 50 [ Background.color <| rgb 255 120 126 ] <|
-                            fa iconStyle "fab fa-instagram"
-                    }
-                ]
+            el [ centerX ] <|
+                row
+                    [ spacing 30 ]
+                    [ newTabLink []
+                        { url = "https://www.facebook.com/ONeill-Coffee-710833155767900/"
+                        , label =
+                            circle 50 [ Background.color <| rgb 122 213 220 ] <|
+                                fa iconStyle "fab fa-facebook-f"
+                        }
+                    , newTabLink []
+                        { url = "https://twitter.com/oneillcoffee"
+                        , label =
+                            circle 50 [ Background.color <| rgb 255 204 83 ] <|
+                                fa iconStyle "fab fa-twitter"
+                        }
+                    , newTabLink []
+                        { url = "https://www.instagram.com/oneillcoffee/"
+                        , label =
+                            circle 50 [ Background.color <| rgb 255 120 126 ] <|
+                                fa iconStyle "fab fa-instagram"
+                        }
+                    ]
 
         logoLayout =
             if thin then
@@ -178,74 +179,68 @@ view { device, size, details } =
                 row
 
         info =
-            column
-                [ spacing 20
-                , if thin then
-                    center
-                  else
-                    alignLeft
-                ]
-                [ logoLayout
-                    [ centerY, spacing 10, center ]
-                    [ circle 30 [ Background.color <| rgb 122 213 220 ] <|
-                        fa iconStyle "fas fa-map-marker-alt"
-                    , let
-                        addr =
-                            el addressStyle <|
-                                text "64 TOWNSHEND STREET, SKIBBEREEN"
-                      in
-                      case details of
-                        Just { location } ->
-                            newTabLink []
-                                { url = location
-                                , label = addr
-                                }
+            el [ centerX ] <|
+                column
+                    [ spacing 20 ]
+                    [ logoLayout
+                        [ spacing 10 ]
+                        [ circle 30 [ Background.color <| rgb 122 213 220 ] <|
+                            fa iconStyle "fas fa-map-marker-alt"
+                        , let
+                            addr =
+                                el addressStyle <|
+                                    text "64 TOWNSHEND STREET, SKIBBEREEN"
+                          in
+                          case details of
+                            Just { location } ->
+                                newTabLink []
+                                    { url = location
+                                    , label = addr
+                                    }
 
-                        Nothing ->
-                            addr
-                    ]
-                , logoLayout
-                    [ centerY, spacing 10, center ]
-                    [ circle 30 [ Background.color <| rgb 255 204 83 ] <|
-                        fa iconStyle "fas fa-phone"
-                    , link []
-                        { url = "tel:+353863334562"
-                        , label =
-                            el addressStyle <|
-                                text "086 333 4562"
-                        }
-                    ]
-                , logoLayout
-                    [ centerY, spacing 10, center ]
-                    [ circle 30 [ Background.color <| rgb 255 120 126 ] <|
-                        fa iconStyle "fas fa-envelope"
-                    , link []
-                        { url = "mailto:oneillscoffee@gmail.com"
-                        , label =
-                            el [ center ] <|
+                            Nothing ->
+                                addr
+                        ]
+                    , logoLayout
+                        [ spacing 10 ]
+                        [ circle 30 [ Background.color <| rgb 255 204 83 ] <|
+                            fa iconStyle "fas fa-phone"
+                        , link []
+                            { url = "tel:+353863334562"
+                            , label =
+                                el addressStyle <|
+                                    text "086 333 4562"
+                            }
+                        ]
+                    , logoLayout
+                        [ spacing 10 ]
+                        [ circle 30 [ Background.color <| rgb 255 120 126 ] <|
+                            fa iconStyle "fas fa-envelope"
+                        , link []
+                            { url = "mailto:oneillscoffee@gmail.com"
+                            , label =
                                 el addressStyle <|
                                     text "oneillscoffee@gmail.com"
-                        }
+                            }
+                        ]
                     ]
-                ]
 
         hours =
             details
                 |> Maybe.map
                     (.hours
                         >> List.map
-                            (text
+                            (String.toUpper
+                                >> text
                                 >> el
                                     [ osc
                                     , Font.color Color.white
                                     , Font.size 25
+                                    , centerX
                                     ]
                             )
-                        >> column
-                            [ center
-                            , spacing 20
-                            , inlineStyle [ uppercase ]
-                            ]
+                        >> column [ spacing 20 ]
+                        >> el [ centerX ]
                     )
                 |> Maybe.withDefault empty
 
@@ -257,10 +252,10 @@ view { device, size, details } =
                 Desktop ->
                     row
             )
-                [ centerY, center ]
+                [ centerY, centerX ]
                 [ image
                     [ width <| px <| round wall
-                    , center
+                    , centerX
                     ]
                     { src = "/pic.jpg"
                     , description = "O'Neill Coffee"
@@ -274,9 +269,9 @@ view { device, size, details } =
                 ]
     in
     layout [ Background.color blue, padding 20 ] <|
-        el [ center ] <|
+        el [ centerX ] <|
             column
-                [ spacing 50, center ]
+                [ spacing 50, centerX ]
                 [ top
                 , info
                 , hours
@@ -336,24 +331,6 @@ fa attrs =
         >> flip Html.span []
         >> html
         >> el attrs
-
-
-inlineStyle : List ( String, String ) -> Attribute msg
-inlineStyle =
-    Attr.style
-        >> attribute
-
-
-maxWidth : Int -> ( String, String )
-maxWidth =
-    toString
-        >> flip (++) "px"
-        >> (,) "maxWidth"
-
-
-uppercase : ( String, String )
-uppercase =
-    ( "text-transform", "uppercase" )
 
 
 decodeDetails : Decoder Details
